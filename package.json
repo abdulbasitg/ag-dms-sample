@@ -1,0 +1,40 @@
+{
+  "name": "ag-dms-sample",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^8",
+    "express": "^4",
+    "@cap-js/sdm": "^1.4.0",
+    "@cap-js/hana": "^1"
+  },
+  "devDependencies": {
+    "@cap-js/cds-types": "^0.10.0",
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^8"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-projects": "cds watch --open projects/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "cds": {
+    "requires": {
+      "auth": "xsuaa",
+      "destinations": true,
+      "db": {
+        "kind": "hana"
+      },
+      "sdm": {
+        "settings": {
+          "repositoryId": "s4-glb-dms-sample"
+        }
+      }
+    }
+  },
+  "sapux": [
+    "app/projects"
+  ]
+}
