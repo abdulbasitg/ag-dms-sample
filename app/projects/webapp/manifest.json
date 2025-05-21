@@ -17,7 +17,7 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/projects/",
+        "uri": "odata/v4/projects/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -151,5 +151,9 @@
   "sap.fiori": {
     "registrationIds": [],
     "archeType": "transactional"
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "agsamples"
   }
 }

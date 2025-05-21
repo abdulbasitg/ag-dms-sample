@@ -4,6 +4,7 @@ version: 1.0.0
 description: "A simple CAP project."
 parameters:
   enable-parallel-deployments: true
+  deploy_mode: html5-repo
 build-parameters:
   before-all:
     - builder: custom
@@ -25,7 +26,7 @@ modules:
           srv-url: ${default-url}
     requires:
       - name: ag-dms-sample-auth
-      - name: s4-glb-dms-sample-dms
+      - name: ag-dms-sample-dms
       - name: ag-dms-sample-destination
       - name: ag-dms-sample-db
 
@@ -45,6 +46,7 @@ modules:
           forwardAuthToken: true
       - name: ag-dms-sample-auth
       - name: ag-dms-sample-destination
+      - name: ag-dms-sample-html5-runtime
     provides:
       - name: app-api
         properties:
@@ -58,6 +60,62 @@ modules:
       buildpack: nodejs_buildpack
     requires:
       - name: ag-dms-sample-db
+  - name: ag-dms-sample-dest-content
+    type: com.sap.application.content
+    requires:
+      - name: ag-dms-sample-destination
+        parameters:
+          content-target: true
+      - name: ag-dms-sample-html5-repo-host
+        parameters:
+          service-key:
+            name: ag-dms-sample-html5-repo-host-key
+      - name: ag-dms-sample-auth
+        parameters:
+          service-key:
+            name: ag-dms-sample-auth-key
+    parameters:
+      content:
+        instance:
+          destinations:
+            - Name: ag-dms-sample_repo_host
+              ServiceInstanceName: ag-dms-sample-html5-repo-host
+              ServiceKeyName: ag-dms-sample-html5-repo-host-key
+              sap.cloud.service: agsamples
+            - Authentication: OAuth2UserTokenExchange
+              Name: ag-dms-sample_uaa
+              ServiceInstanceName: ag-dms-sample-auth
+              ServiceKeyName: ag-dms-sample-auth-key
+              sap.cloud.service: agsamples
+          existing_destinations_policy: ignore
+    build-parameters:
+      no-source: true
+  - name: ag-dms-sample-app-deployer
+    type: com.sap.application.content
+    path: gen
+    requires:
+      - name: ag-dms-sample-html5-repo-host
+        parameters:
+          content-target: true
+    build-parameters:
+      build-result: app/
+      requires:
+        - name: agdmssampleprojects
+          artifacts:
+            - projects.zip
+          target-path: app/
+
+  - name: agdmssampleprojects
+    type: html5
+    path: app/projects
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm ci
+        - npm run build
+      supported-platforms:
+        []
 
 resources:
   - name: ag-dms-sample-auth
@@ -69,7 +127,7 @@ resources:
       config:
         xsappname: ag-dms-sample-${org}-${space}
         tenant-mode: dedicated
-  - name: s4-glb-dms-sample-dms
+  - name: ag-dms-sample-dms
     type: org.cloudfoundry.existing-service
   - name: ag-dms-sample-destination
     type: org.cloudfoundry.managed-service
@@ -96,9 +154,20 @@ resources:
       service: destination
       service-plan: lite
     requires:
-      - name: srv-api    
+      - name: srv-api
   - name: ag-dms-sample-db
     type: com.sap.xs.hdi-container
     parameters:
       service: hana
       service-plan: hdi-shared
+
+  - name: ag-dms-sample-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+  - name: ag-dms-sample-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime
